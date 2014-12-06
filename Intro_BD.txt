@@ -1,0 +1,17 @@
+CREATE DATABASE 'tiger.ftk.spbstu.ru:/var/lib/firebird/435011/recruitDB.fdb' USER 'SYSDBA' PASSWORD 'masterkey';
+commit;
+CONNECT 'tiger.ftk.spbstu.ru:/var/lib/firebird/435011/recruitDB.fdb' USER 'SYSDBA' PASSWORD 'masterkey';
+CREATE TABLE status_recruit(status_id INT PRIMARY KEY, status VARCHAR(16) NOT NULL);
+COMMIT;
+CREATE TABLE recruit(id INT PRIMARY KEY, name VARCHAR(32) NOT NULL, birthday DATE NOT NULL, class CHAR(2) NOT NULL,
+	 address VARCHAR(64) NOT NULL, status_id INT REFERENCES status_recruit(status_id));
+COMMIT;
+INSERT INTO status_recruit(status_id, status) VALUES (1, 'goden');
+INSERT INTO status_recruit(status_id, status) VALUES (2, 'ne goden');
+INSERT INTO status_recruit(status_id, status) VALUES (3, 'ne obsledovan');
+INSERT INTO status_recruit(status_id, status) VALUES (4, 'uslovno goden');
+INSERT INTO recruit(id, name, birthday, class, address, status_id) VALUES (1,'Paikachev','02.03.1993','B1','SPB', 1);
+INSERT INTO recruit(id, name, birthday, class, address, status_id) VALUES (2,'Sidorov', '04.05.1993','C2','SPB', 2);
+INSERT INTO recruit(id, name, birthday, class, address, status_id) VALUES (3,'Shubin', '06.07.1994','A1','SPB', 4);
+INSERT INTO recruit(id, name, birthday, class, address, status_id) VALUES (4,'Kulebyakin','12.08.1992','B3','SPB', 3);
+select * from recruit;
