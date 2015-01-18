@@ -1,0 +1,66 @@
+SET TERM ^ ;
+
+CREATE or ALTER PROCEDURE REC_APPEAL (
+    QUANT_R INT, 
+	RANK_R INT, 
+	POST_R INT, 
+	SPECIAL_R INT, 
+	DIV_R INT, 
+	PERIOD_DAY INT)
+AS
+declare variable TMP_GROUP INT;
+declare variable i INT;
+declare variable i_max INT;
+declare variable id INT;
+declare variable TMP_STATERS INT;
+declare variable TMP_DATEFROM DATE;
+declare variable TMP_DATETO DATE;
+declare variable CHECK_REC INT;
+BEGIN
+  /* Procedure Text */
+  TMP_STATERS=0;
+  i=0;
+  id=0;
+  SELECT MAX(medicaldata.md_id) FROM medicaldata
+  INTO :i_max;
+  SELECT MAX(militaryservice.id_service) FROM militaryservice
+  INTO :id;
+  SELECT current_date FROM rdb$database 
+  INTO :TMP_DATEFROM;
+  TMP_DATETO=TMP_DATEFROM+:PERIOD_DAY;
+  WHILE(i_max>=i)
+  DO
+  BEGIN
+        IF(QUANT_R=0) THEN
+        LEAVE;
+        i=i+1;
+        SELECT recruit.recruit_id FROM recruit
+        WHERE recruit.recruit_id=:i
+        INTO :CHECK_REC;
+        IF(CHECK_REC is not NULL) THEN
+        BEGIN
+            CHECK_REC=NULL;
+            SELECT medicaldata.group_id FROM medicaldata
+            WHERE medicaldata.md_id =:i
+            INTO :TMP_GROUP;
+            IF(TMP_GROUP<7) THEN
+            BEGIN
+                SELECT recstate.staters_id FROM recstate
+                WHERE recstate.recst_id=:i
+                INTO :TMP_STATERS;
+                IF(TMP_STATERS=3) THEN
+                BEGIN
+                    UPDATE recstate SET staters_id=2 WHERE recst_id= :i;
+                    UPDATE recstate SET datefrom = :TMP_DATEFROM where recst_id= :i;
+                    UPDATE recstate SET dateto = :TMP_DATETO where recst_id= :i;
+                    id=id+1;
+                    INSERT INTO militaryservice(id_service, person_id, action, rank, post, special, mil_division, date_from, date_to)
+                        VALUES (:id, :i, 1, :RANK_R, :POST_R, :SPECIAL_R, :DIV_R, :TMP_DATEFROM, :TMP_DATETO);
+                    QUANT_R=QUANT_R-1;
+                END
+            END
+        END
+  END
+END^
+
+SET TERM ; ^

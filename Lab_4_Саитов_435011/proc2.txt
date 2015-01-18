@@ -1,0 +1,22 @@
+SET TERM ^ ;
+
+CREATE or ALTER PROCEDURE DEL_DELAY (
+    QUANT_SAVE INT)
+AS
+declare variable i INT;
+declare variable i_max INT;
+begin
+  /* Procedure Text */
+  i=0;
+  SELECT MAX(storyrecruit.person_id) FROM storyrecruit
+  INTO :i_max;
+  WHILE(i_max>=i)
+  DO
+  BEGIN
+        i=i+1;
+		DELETE FROM storyrecruit WHERE id_strory IN
+			( SELECT SKIP (:QUANT_SAVE) id_strory FROM storyrecruit WHERE person_id = :i ORDER BY datefrom DESC, dateto DESC);
+  END
+END^
+
+SET TERM ; ^

@@ -1,0 +1,81 @@
+SET TERM ^ ;
+CREATE OR ALTER TRIGGER auto_insert FOR recruit
+ACTIVE BEFORE INSERT POSITION 0
+AS
+declare variable max_private INT;
+declare variable max_parent INT;
+declare variable max_addr INT;
+declare variable max_med INT;
+declare variable max_doctor INT;
+declare variable max_status INT;
+declare variable max_socst INT;
+declare variable max_recst INT;
+BEGIN
+ SELECT MAX(privatedata.pd_id) FROM privatedata
+ INTO :max_private;
+ SELECT MAX(parent.parent_id) FROM parent
+ INTO :max_parent;
+ SELECT MAX(addrhome.ah_id) FROM addrhome
+ INTO :max_addr;
+ SELECT MAX(medicaldata.md_id) FROM medicaldata
+ INTO :max_med;
+ SELECT MAX(doctor.doc_id) FROM doctor
+ INTO :max_doctor;
+ SELECT MAX(status.status_id) FROM status
+ INTO :max_status;
+ SELECT MAX(socstate.socst_id) FROM socstate
+ INTO :max_socst;
+ SELECT MAX(recstate.recst_id) FROM recstate
+ INTO :max_recst;
+ 
+ max_addr = max_addr+1;
+ INSERT INTO addrhome(ah_id) VALUES (:max_addr);
+	
+ max_parent = max_parent+1;
+ INSERT INTO parent(parent_id) VALUES (:max_parent);	
+ max_private = max_private+1;
+ INSERT INTO privatedata(pd_id, father_id, addrhome_id) VALUES (:max_private,:max_parent, :max_addr);
+ max_parent = max_parent+1;
+ INSERT INTO parent(parent_id) VALUES (:max_parent);	
+ UPDATE privatedata SET mother_id=:max_parent WHERE pd_id=:max_private;
+ 
+ max_socst = max_socst+1;
+ INSERT INTO socstate(socst_id) VALUES (:max_socst);	
+ max_status = max_status+1;
+ INSERT INTO status(status_id,socst_id) VALUES (:max_status, :max_status);	
+ max_recst = max_recst+1;
+ INSERT INTO recstate(recst_id) VALUES (:max_recst);
+ UPDATE status SET recst_id=:max_recst WHERE status_id=:max_status;
+
+ max_doctor = max_doctor+1;
+ INSERT INTO doctor(doc_id) VALUES (:max_doctor);
+ max_med = max_med+1;
+ INSERT INTO medicaldata(md_id, ther_id) VALUES (:max_med, :max_doctor);
+ max_doctor = max_doctor+1;
+ INSERT INTO doctor(doc_id) VALUES (:max_doctor);
+ UPDATE medicaldata SET ther_id=:max_doctor WHERE md_id =:max_med;
+ max_doctor = max_doctor+1;
+ INSERT INTO doctor(doc_id) VALUES (:max_doctor);
+ UPDATE medicaldata SET ent_id=:max_doctor WHERE md_id =:max_med;
+ max_doctor = max_doctor+1;
+ INSERT INTO doctor(doc_id) VALUES (:max_doctor);
+ UPDATE medicaldata SET surg_id=:max_doctor WHERE md_id =:max_med;
+ max_doctor = max_doctor+1;
+ INSERT INTO doctor(doc_id) VALUES (:max_doctor);
+ UPDATE medicaldata SET ocul_id=:max_doctor WHERE md_id =:max_med;
+ max_doctor = max_doctor+1;
+ INSERT INTO doctor(doc_id) VALUES (:max_doctor);
+ UPDATE medicaldata SET derm_id=:max_doctor WHERE md_id =:max_med;
+ max_doctor = max_doctor+1;
+ INSERT INTO doctor(doc_id) VALUES (:max_doctor);
+ UPDATE medicaldata SET neur_id=:max_doctor WHERE md_id =:max_med;
+ max_doctor = max_doctor+1;
+ INSERT INTO doctor(doc_id) VALUES (:max_doctor);
+ UPDATE medicaldata SET psych_id=:max_doctor WHERE md_id =:max_med;
+ max_doctor = max_doctor+1;
+ INSERT INTO doctor(doc_id) VALUES (:max_doctor);
+ UPDATE medicaldata SET conclusion_id=:max_doctor WHERE md_id =:max_med;
+
+END
+^
+SET TERM ; ^

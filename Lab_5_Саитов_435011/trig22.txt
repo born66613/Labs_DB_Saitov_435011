@@ -1,0 +1,10 @@
+SET TERM ^ ;
+CREATE OR ALTER TRIGGER del_rec_before FOR recruit
+ACTIVE before DELETE POSITION 0
+AS
+BEGIN
+ DELETE FROM storyrecruit WHERE storyrecruit.person_id = old.recruit_id;
+ DELETE FROM militaryservice WHERE militaryservice.person_id = old.recruit_id;
+END
+^
+SET TERM ; ^

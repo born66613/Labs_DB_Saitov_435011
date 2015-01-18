@@ -1,0 +1,71 @@
+SET TERM ^ ;
+
+CREATE or ALTER PROCEDURE INF_APPEAL (
+	DIV_R INT, 
+	DATEFROM DATE,
+	DATETO DATE
+	)
+AS
+declare variable i INT;
+declare variable id_max INT;
+declare variable id INT;
+declare variable TMP_REC INT;
+declare variable TMP_STATERS INT;
+declare variable TMP_DATEFROM DATE;
+declare variable TMP_DATETO DATE;
+declare variable TMP_FROM DATE;
+declare variable TMP_TO DATE;
+declare variable TMP_DIVISION INT;
+begin
+  /* Procedure Text */
+  TMP_STATERS=0;
+  i=0;
+  id=0;
+  SELECT MAX(storyrecruit.id_strory) FROM storyrecruit
+  INTO :id;
+  SELECT MAX(militaryservice.id_service) FROM militaryservice
+  INTO :id_max;
+  SELECT current_date FROM rdb$database 
+  INTO :TMP_DATEFROM;
+  TMP_DATETO=TMP_DATEFROM+36500;
+  WHILE(id_max>=i)
+  DO
+  BEGIN
+        i=i+1;
+        SELECT militaryservice.mil_division FROM militaryservice
+        WHERE militaryservice.id_service =:i
+        INTO :TMP_DIVISION;
+		SELECT militaryservice.person_id FROM militaryservice
+        WHERE militaryservice.id_service =:i
+        INTO :TMP_REC;
+        IF(TMP_DIVISION=DIV_R) THEN
+        BEGIN
+            SELECT recstate.staters_id FROM recstate
+            WHERE recstate.recst_id=:TMP_REC
+            INTO :TMP_STATERS;
+            IF(TMP_STATERS=1) THEN
+            BEGIN
+                SELECT militaryservice.date_from FROM militaryservice
+                WHERE militaryservice.id_service=:i
+                INTO :TMP_FROM;
+                IF(DATEFROM<TMP_FROM) THEN
+                BEGIN
+                    SELECT militaryservice.date_to FROM militaryservice
+                    WHERE militaryservice.id_service=:i
+                    INTO :TMP_TO;
+                    IF(DATETO>TMP_TO) THEN
+                    BEGIN
+                        UPDATE recstate SET staters_id=3 WHERE recst_id= :TMP_REC;
+                        UPDATE recstate SET datefrom = :TMP_DATEFROM where recst_id= :TMP_REC;
+                        UPDATE recstate SET dateto = :TMP_DATETO where recst_id= :TMP_REC;
+                        id=id+1;
+                        INSERT INTO storyrecruit(id_strory, person_id, reason, datefrom, dateto)
+                            VALUES (:id, :TMP_REC, 'SERVICE', :TMP_DATEFROM, :TMP_DATETO);
+                    END
+                END
+            END
+        END
+  END
+END^
+
+SET TERM ; ^

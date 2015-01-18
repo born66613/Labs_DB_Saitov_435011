@@ -1,0 +1,24 @@
+SET TERM ^ ;
+CREATE OR ALTER TRIGGER auto_insert_after FOR recruit
+ACTIVE AFTER INSERT POSITION 0
+AS
+declare variable max_private INT;
+declare variable max_med INT;
+declare variable max_status INT;
+declare variable max_rec INT;
+BEGIN
+ SELECT MAX(privatedata.pd_id) FROM privatedata
+ INTO :max_private;
+ SELECT MAX(medicaldata.md_id) FROM medicaldata
+ INTO :max_med;
+ SELECT MAX(status.status_id) FROM status
+ INTO :max_status;	
+ SELECT MAX(recruit.recruit_id) FROM recruit
+ INTO :max_rec; 
+ UPDATE recruit SET privatedata_id=:max_private WHERE recruit_id=:max_rec;
+ UPDATE recruit SET medicaldata_id=:max_med WHERE recruit_id=:max_rec;
+ UPDATE recruit SET status_id=:max_status WHERE recruit_id=:max_rec;
+
+END
+^
+SET TERM ; ^

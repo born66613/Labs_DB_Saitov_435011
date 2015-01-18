@@ -1,0 +1,29 @@
+SET TERM ^ ;
+CREATE OR ALTER TRIGGER auto_appeal FOR medicaldata
+ACTIVE AFTER UPDATE POSITION 0
+AS
+declare variable TMP_REC INT;
+declare variable id INT;
+declare variable TMP_DATEFROM DATE;
+declare variable TMP_DATETO DATE;
+BEGIN
+ SELECT current_date FROM rdb$database 
+ INTO :TMP_DATEFROM;
+ TMP_DATETO=TMP_DATEFROM+190;
+ SELECT MAX(storyrecruit.id_strory) FROM storyrecruit
+ INTO :id; 
+ IF(new.group_id>6) THEN 
+	BEGIN
+		SELECT recruit.recruit_id FROM recruit 
+			WHERE (recruit.medicaldata_id=old.md_id)
+			INTO :TMP_REC;
+		UPDATE recstate SET staters_id=3 WHERE recst_id=:TMP_REC;
+		UPDATE recstate SET datefrom=:TMP_DATEFROM WHERE recst_id=:TMP_REC;
+		UPDATE recstate SET dateto=:TMP_DATETO WHERE recst_id=:TMP_REC;
+		id=id+1;
+        INSERT INTO storyrecruit(id_strory, person_id, reason, datefrom, dateto)
+        VALUES (:id, :TMP_REC, 'BOLEN', :TMP_DATEFROM, :TMP_DATETO);
+	END
+END
+^
+SET TERM ; ^
